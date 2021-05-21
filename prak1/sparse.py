@@ -96,7 +96,7 @@ class SparseMatrix:
         return self.__add__(other)
             
 
-    def __matmul__(self, other):
+    def __matmul__old(self, other):
         res = SparseMatrix([], [], [], shape=(self.shape[0], other.shape[1]))
         
         combinations = [(i, k) for i in range(self.shape[0]) for k in range(other.shape[1])]
@@ -105,6 +105,15 @@ class SparseMatrix:
             res[i, k] = sum(self[i, j] * other[j, k] for j in range(self.shape[1]))
         
         return res
+    
+    def __matmul__(self, other):
+        res = SparseMatrix([], [], [], shape=(self.shape[0], other.shape[1]))
+        
+        for akey in self.content.keys():
+            for bkey in filter(lambda key: key[0] == akey[1], other.content.keys()):
+                res[akey[0], bkey[1]] += self[akey] * other[bkey]
+        return res
+                
     
     @property
     def T(self):
