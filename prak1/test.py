@@ -98,10 +98,23 @@ class TestSparse(unittest.TestCase):
         c = SparseMatrix([1, 1, 2, 1, 1], 
                          [0, 1, 1, 1, 2],
                          [0, 0, 1, 2, 2])
-
-        d = a + b
         
-        self.assertEqual(c, d)
+        d = SparseMatrix([1, -1, -1, 1], 
+                         [0, 1, 1, 2],
+                         [0, 0, 2, 2], shape=(3,3))
+        
+        #e = SparseMatrix([], 
+        #                 [], 
+        #                 [], shape=(3, 3))
+        
+        self.assertEqual(c, a+b)
+        print(a)
+        print(b)
+        print(a-b)
+        print(d)
+        self.assertEqual(d, a-b)
+        
+        
         
         e = SparseMatrix([], [], [], shape=(10, 10))
         self.assertRaises(ArithmeticError, a.__add__, e)

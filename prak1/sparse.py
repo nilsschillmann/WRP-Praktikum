@@ -86,7 +86,9 @@ class SparseMatrix:
         res = SparseMatrix([], [], [], shape=self.shape)
         content = {}
         for key in set(list(self.content.keys()) + list(other.content.keys())):
-            content[key] = self.content.get(key, 0) + other.content.get(key, 0)
+            value = self.content.get(key, 0) + other.content.get(key, 0)
+            if value != 0:
+                content[key] = value #TODO: make this in direct in the sparce matrix not in content
         res.content = content
         return res
     
@@ -94,6 +96,14 @@ class SparseMatrix:
         if other == 0:
             return self
         return self.__add__(other)
+    
+    def __sub__(self, other):
+        sub_other = SparseMatrix([], [], [], shape=other.shape)
+        content = {}
+        for key, value in other.content.items():
+            content[key] = 0 - value
+        sub_other.content = content
+        return self + sub_other
             
 
     def __matmul__old(self, other):
