@@ -45,7 +45,7 @@ class SparseMatrix:
             self.shape = (max(row)+1, max(col)+1)
         else:
             assert len(shape) == 2
-            assert type(shape[0]) == type(shape[1]) == int
+            #assert type(shape[0]) == type(shape[1]) == int
             assert shape[0] > 0
             assert shape[1] > 0
             
@@ -68,8 +68,8 @@ class SparseMatrix:
     def __check_index(self, index):
         if type(index) != tuple or len(index) != 2:
             raise TypeError('Index must be a tuple like (x, y)')
-        if type(index[0]) != int or type(index[1]) != int:
-            raise TypeError('Index values must be of type int')
+        #if type(index[0]) != int or type(index[1]) != int:
+        #    raise TypeError('Index values must be of type int')
         if not ((0 <= index[0] <= self.shape[0]-1) and (0 <= index[1] <= self.shape[1]-1)):
             raise IndexError('Index out of matrix shape')
     
@@ -104,6 +104,18 @@ class SparseMatrix:
             content[key] = 0 - value
         sub_other.content = content
         return self + sub_other
+    
+    def __rsub__(self, other):
+        pass
+    
+    # A * lambda
+    def __mul__(self, other):
+        res = SparseMatrix([], [], [], shape=self.shape)
+        res.content = {key: value*other for key, value in self.content.items()}
+        return res
+    
+    def __rmul__(self, other):
+        return  self * other
             
 
     def __matmul__old(self, other):

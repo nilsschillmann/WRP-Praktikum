@@ -173,7 +173,14 @@ class TestSparse(unittest.TestCase):
         
         self.assertEqual(c, a @ b)
         
+    def test_mul(self):
+        a = SparseMatrix([1, 2, 3], [0, 1, 0], [1, 2, 0])
+        b = 2
+        c = SparseMatrix([2, 4, 6], [0, 1, 0], [1, 2, 0])
         
+        self.assertEqual(a*b, c)
+        print(b*a)
+        self.assertEqual(b*a, c)
 
 if __name__ == '__main__':
     unittest.main()
