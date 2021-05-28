@@ -1,3 +1,4 @@
+from linsolve import jacobi_method
 from typing import Collection
 import unittest
 from unittest import main
@@ -181,6 +182,18 @@ class TestSparse(unittest.TestCase):
         self.assertEqual(a*b, c)
         print(b*a)
         self.assertEqual(b*a, c)
+        
+class Test_linsolve(unittest.TestCase):
+    from linsolve import jacobi_method
+    def test_jacobi(self):
+        A = SparseMatrix([4, -2, 1, -1, 5, -2, 1, 1, 3], [0, 0, 0, 1, 1, 1, 2, 2, 2], [0, 1, 2, 0, 1, 2, 0, 1, 2])
+        b = SparseMatrix([2, 4, 6], [0, 1, 2], [0, 0, 0])
+        x0 = SparseMatrix([1, 2, 1], [0, 1, 2], [0, 0, 0])
+        
+        x1 = SparseMatrix([0.25, 1.4, 1], [0, 1, 2], [0, 0, 0])
+        res = jacobi_method(A, b, iterations=1, startvector=x0, w=1)
+        print(res)
+        self.assertEqual(x1, res)
 
 if __name__ == '__main__':
     unittest.main()
