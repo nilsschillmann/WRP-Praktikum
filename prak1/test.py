@@ -91,8 +91,6 @@ class TestSparse(unittest.TestCase):
         self.assertEqual(a, d)
         self.assertNotEqual(a, e)
         
-        
-
     def test_add(self):
         a = SparseMatrix([1, 1, 1], [0, 1, 2], [0, 1, 2], shape=(3, 3))
         b = SparseMatrix([1, 1, 1], [1, 1, 1], [0, 1, 2], shape=(3, 3))
@@ -103,10 +101,6 @@ class TestSparse(unittest.TestCase):
         d = SparseMatrix([1, -1, -1, 1], 
                          [0, 1, 1, 2],
                          [0, 0, 2, 2], shape=(3,3))
-        
-        #e = SparseMatrix([], 
-        #                 [], 
-        #                 [], shape=(3, 3))
         
         self.assertEqual(c, a+b)
         print(a)
