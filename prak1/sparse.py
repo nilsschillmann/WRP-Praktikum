@@ -1,6 +1,7 @@
 import numpy as np
 
 # TODO: function documention
+# TODO: slicing
 
 class SparseMatrix:
     """
