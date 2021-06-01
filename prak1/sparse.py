@@ -73,7 +73,8 @@ class SparseMatrix:
             raise TypeError('Index must be a tuple like (x, y)')
         self.__check_shape(index)
         if not ((0 <= index[0] <= self.shape[0]-1) and (0 <= index[1] <= self.shape[1]-1)):
-            raise IndexError('Index out of matrix shape')
+            pass
+#            raise IndexError('Index out of matrix shape')
     
 
     def __repr__(self) -> str:

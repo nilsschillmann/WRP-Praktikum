@@ -54,12 +54,17 @@ def SOR(A, b, iterations=5, startvector=None, w=1/2):
     x_new = startvector or SparseMatrix([], [], [], shape=b.shape)
     for k in range(iterations):
         for i in range(b.shape[0]):
-            A_i_content = {(0, i): A[key] for key in A.content.keys() if key[0] == i}# hier war der fehler
+            
+            A_i_content = {key: A[key] for key in A.content.keys() if key[0] == i}
+#            A_i_content = {(0, i): A[key] for key in A.content.keys() if key[0] == i}# hier war der fehler
             A_i = SparseMatrix([], [], [], shape=(1, A.shape[1]))
             A_i.content = A_i_content
+#            print("Ai ", A_i)
             
             s_i = (A_i @ x_old)
             wert = s_i[0, 0]
+            print(A_i, " @ ", x_old, "=", s_i)
+            print("s", i, " = ", wert)
             x_new[i, 0] = x_old[i, 0] - w/(A[i,i]) * (wert - b[i, 0])
             x_old = 1 * x_new # TODO: copy methode implementieren
         # eine Iteration, ein mal den Lösungsvektor
@@ -73,28 +78,36 @@ if __name__ == '__main__':
     
     ## example from the english wikipedia
     # https://en.wikipedia.org/wiki/Jacobi_method
-    A = SparseMatrix([2, 1, 5, 7], [0, 0, 1, 1], [0, 1, 0, 1])
-    b = SparseMatrix([11, 13], [0, 1], [0, 0])
-    x0 = SparseMatrix([1, 1], [0, 1], [0, 0])
-        
-    x1 = SparseMatrix([1.25, 1.4, 1], [0, 1, 2], [0, 0, 0])
+#    A = SparseMatrix([2, 1, 5, 7], [0, 0, 1, 1], [0, 1, 0, 1])
+#    b = SparseMatrix([11, 13], [0, 1], [0, 0])
+#    x0 = SparseMatrix([1, 1], [0, 1], [0, 0])
+    
+    A = SparseMatrix([4, -2, 1, -1, 5, -2, 1, 1, 3], [0, 0, 0, 1, 1, 1, 2, 2, 2], [0, 1, 2, 0, 1, 2, 0, 1, 2])
+    b = SparseMatrix([2, 4, 6], [0, 1, 2], [0, 0, 0])
+    x0 = SparseMatrix([1, 2, 1], [0, 1, 2], [0, 0, 0])
+    
+    x_jac1 = SparseMatrix([1.25, 1.4, 1], [0, 1, 2], [0, 0, 0])
+    x_gasei1 = SparseMatrix([1.25, 1.45, 1.1], [0, 1, 2], [0, 0, 0])
+    
     print("--- JACOBI ---")
     res = jacobi_method(A, b, iterations=1, startvector=x0, w=1)
     print("1 iterations: ", res)
+    print("EXPECTED: 1 iterations: ", x_jac1)
     
     res = jacobi_method(A, b, iterations=2, startvector=x0, w=1)
     print("2 iterations: ", res)
     
-    res = jacobi_method(A, b, iterations=25, startvector=x0, w=1)
-    print("25 iterations: ", res)
+#    res = jacobi_method(A, b, iterations=25, startvector=x0, w=1)
+#    print("25 iterations: ", res)
     
-    print("--- SOR ---")
-    res = SOR(A, b, iterations=1, startvector=x0)
+    print("--- GAUß-SEIDEL ---")
+    res = gaus_seidel(A, b, iterations=1, startvector=x0)
     print("1 iterations: ", res)
+    print("EXPECTED: 1 iterations: ", x_gasei1)
     
-    res = SOR(A, b, iterations=2, startvector=x0)
+    res = gaus_seidel(A, b, iterations=2, startvector=x0)
     print("2 iterations: ", res)
     
-    res = SOR(A, b, iterations=25, startvector=x0)
-    print("25 iterations: ", res)
+#    res = SOR(A, b, iterations=25, startvector=x0)
+#    print("25 iterations: ", res)
     
