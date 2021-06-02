@@ -2,15 +2,14 @@
 Hier sollen die Funktionen für iterative LGS-Löser implementiert werden.
 """
 
-# TODO: konvergenzkriterium einbauen (vom residuum abhängig machen)
-# TODO: zwischenergebnisse von außen zugänglich machen (full output mit dictionary)
+
 # TODO: (funktionen numpy kompatibel machen)
 # TODO: gaus_seidel und SOR auf korrektheit überprüfen
 
 import numpy as np
 from sparse import SparseMatrix
 
-def jacobi_method(A, b, iterations=5, startvector=None, w=1):
+def jacobi_method(A, b, iterations=5, startvector=None, w=1, threshold=0.1, full_output=False):
     
     Dinvers_content = {key: 1/A[key] for key in A.content.keys() if key[0] == key[1]}
     D_invers = SparseMatrix([], [], [], shape=A.shape)
@@ -18,25 +17,34 @@ def jacobi_method(A, b, iterations=5, startvector=None, w=1):
     Diw = D_invers * w
     
     x_old = startvector or SparseMatrix([], [], [], shape=b.shape)
-      
+    
+    if full_output:
+        residua = []
     for k in range(iterations):
         # Vorlesung 21.04 S. 4
-        x_new = x_old + Diw @ (b - (A @ x_old))
+        residuum = (b - (A @ x_old))
+        if full_output:
+            residua.append(max(residuum.content.values()))
+        x_new = x_old + Diw @ residuum
+        if max(residuum.content.values()) < threshold:
+            break
         x_old = x_new
-
+    
+    if full_output:
+        return x_new, residua
     return x_new
 
 
-def gaus_seidel(A, b, iterations=5, startvector=None):
-    return SOR(A, b, iterations, startvector, w=1)       
+def gaus_seidel(A, b, iterations=5, startvector=None, threshold=0.1, full_output=False):
+    return SOR(A, b, iterations, startvector, w=1, threshold=threshold, full_output=full_output)       
     
 
-def SOR(A, b, iterations=5, startvector=None, w=1/2):
+def SOR(A, b, iterations=5, startvector=None, w=1/2, threshold=0.1, full_output=False):
     
-    D = {key: A[key] for key in A.content.keys() if key[0] == key[1]}
-    R = {key: A[key] for key in A.content.keys() if key[0] < key[1]}
-    L = {key: A[key] for key in A.content.keys() if key[0] > key[1]}
-    I = {key: 1 for key in A.content.keys() if key[0] == key[1]}
+    # D = {key: A[key] for key in A.content.keys() if key[0] == key[1]}
+    # R = {key: A[key] for key in A.content.keys() if key[0] < key[1]}
+    # L = {key: A[key] for key in A.content.keys() if key[0] > key[1]}
+    # I = {key: 1 for key in A.content.keys() if key[0] == key[1]}
 
     # for i in 1 ... laenge x
     # berechne si
@@ -52,6 +60,9 @@ def SOR(A, b, iterations=5, startvector=None, w=1/2):
     # aus dem video
     x_old = startvector or SparseMatrix([], [], [], shape=b.shape)
     x_new = startvector or SparseMatrix([], [], [], shape=b.shape)
+    
+    if full_output:
+        residua = []
     for k in range(iterations):
         for i in range(b.shape[0]):
             
@@ -63,15 +74,23 @@ def SOR(A, b, iterations=5, startvector=None, w=1/2):
             
             s_i = (A_i @ x_old)
             wert = s_i[0, 0]
-            #print(A_i, " @ ", x_old, "=", s_i)
-            #print("s", i, " = ", wert)
+            # print(A_i, " @ ", x_old, "=", s_i)
+            # print("s", i, " = ", wert)
             x_new[i, 0] = x_old[i, 0] - w/(A[i,i]) * (wert - b[i, 0])
             x_old = 1 * x_new # TODO: copy methode implementieren
+        residuum = (b - (A @ x_old))
+        if full_output:
+            residua.append(max(residuum.content.values()))
+        if max(residuum.content.values()) < threshold:
+            break
         # eine Iteration, ein mal den Lösungsvektor
         # if ...:
         #     break
     # k Iterations
 
+    if full_output:
+        return x_new, residua
+    
     return x_old
 
 if __name__ == '__main__':
@@ -90,24 +109,37 @@ if __name__ == '__main__':
     x_gasei1 = SparseMatrix([1.25, 1.45, 1.1], [0, 1, 2], [0, 0, 0])
     
     print("--- JACOBI ---")
-    res = jacobi_method(A, b, iterations=1, startvector=x0, w=1)
-    print("1 iterations: ", res)
-    print("EXPECTED: 1 iterations: ", x_jac1)
+    # res = jacobi_method(A, b, iterations=1, w=1)
+    # print("1 iterations: ", res)
+    # # print("EXPECTED: 1 iterations: ", x_jac1)
     
-    res = jacobi_method(A, b, iterations=2, startvector=x0, w=1)
-    print("2 iterations: ", res)
+    # res = jacobi_method(A, b, iterations=2, w=1)
+    # print("2 iterations: ", res)
     
-    res = jacobi_method(A, b, iterations=25, startvector=x0, w=1)
+    res, residua = jacobi_method(A, b, iterations=25, w=1, full_output=True)
+    print('residua: ', residua)
     print("25 iterations: ", res)
     
     print("--- GAUß-SEIDEL ---")
-    res = gaus_seidel(A, b, iterations=1, startvector=x0)
-    print("1 iterations: ", res)
-    print("EXPECTED: 1 iterations: ", x_gasei1)
+    # res = gaus_seidel(A, b, iterations=1)
+    # print("1 iterations: ", res)
+    # # print("EXPECTED: 1 iterations: ", x_gasei1)
     
-    res = gaus_seidel(A, b, iterations=2, startvector=x0)
-    print("2 iterations: ", res)
+    # res = gaus_seidel(A, b, iterations=2)
+    # print("2 iterations: ", res)
     
-    res = SOR(A, b, iterations=25, startvector=x0)
+    res, residua = gaus_seidel(A, b, iterations=25, full_output=True)
+    print('residua: ', residua)
+    print("25 iterations: ", res)
+    
+    print("--- SOR ---")
+    # res = SOR(A, b, iterations=1)
+    # print("1 iterations: ", res)
+    
+    # res = SOR(A, b, iterations=2)
+    # print("2 iterations: ", res)
+    
+    res, residua = SOR(A, b, iterations=25, full_output=True)
+    print('residua: ', residua)
     print("25 iterations: ", res)
     
