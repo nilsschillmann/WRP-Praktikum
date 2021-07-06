@@ -4,6 +4,8 @@ import unittest
 from unittest import main
 from sparse import SparseMatrix
 
+import numpy as np
+
 
 
 class TestSparse(unittest.TestCase):
@@ -103,10 +105,6 @@ class TestSparse(unittest.TestCase):
                          [0, 0, 2, 2], shape=(3,3))
         
         self.assertEqual(c, a+b)
-        print(a)
-        print(b)
-        print(a-b)
-        print(d)
         self.assertEqual(d, a-b)
         
         
@@ -188,6 +186,24 @@ class Test_linsolve(unittest.TestCase):
         res = jacobi_method(A, b, iterations=1, startvector=x0, w=1)
         print(res)
         self.assertEqual(x1, res)
+
+class Test_solve(unittest.TestCase):
+    
+    def test_inject(self):
+        import solve
+        a = np.array([[0, 1, 2, 3, 4],
+                      [5, 6, 7, 8, 9],
+                      [10, 11, 12, 13, 14],
+                      [15, 16, 17, 17, 18],
+                      [19, 20, 21, 22, 23]])
+        b = np.array([[0, 2, 4],
+                      [10, 12, 14],
+                      [19, 21, 23]])
+        print(a)
+        print(b)
+        print(solve.inject(a))
+        print(np.equal(solve.inject(a), b))
+        # self.assertEqual(solve.inject(a), b)
 
 if __name__ == '__main__':
     unittest.main()

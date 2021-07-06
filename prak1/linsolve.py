@@ -11,11 +11,13 @@ from sparse import SparseMatrix
 
 def jacobi_method(A, b, iterations=5, startvector=None, w=1, threshold=0.1, full_output=False):
     
-    Dinvers_content = {key: 1/A[key] for key in A.content.keys() if key[0] == key[1]}
-    D_invers = SparseMatrix([], [], [], shape=A.shape)
-    D_invers.content = Dinvers_content
-    Diw = D_invers * w
-    
+    if isinstance(A, SparseMatrix):
+        Dinvers_content = {key: 1/A[key] for key in A.content.keys() if key[0] == key[1]}
+        D_invers = SparseMatrix([], [], [], shape=A.shape)
+        D_invers.content = Dinvers_content
+        Diw = D_invers * w
+        
+        
     x_old = startvector or SparseMatrix([], [], [], shape=b.shape)
     
     if full_output:
