@@ -1,7 +1,3 @@
-"""
-Hier sollen die Funktionen für iterative LGS-Löser implementiert werden.
-"""
-
 
 # TODO: (funktionen numpy kompatibel machen)
 # TODO: gaus_seidel und SOR auf korrektheit überprüfen
@@ -16,9 +12,16 @@ def jacobi_method(A, b, iterations=5, startvector=None, w=1, threshold=0.1, full
         D_invers = SparseMatrix([], [], [], shape=A.shape)
         D_invers.content = Dinvers_content
         Diw = D_invers * w
+    else:
+        Dinvers = np.zeros(A.shape)
+        np.fill_diagonal(Dinvers, 1/4)
+        Diw = Dinvers * w
         
         
-    x_old = startvector or SparseMatrix([], [], [], shape=b.shape)
+    if startvector is not None:
+        x_old = startvector
+    else:
+        x_old = np.zeros(b.shape)
     
     if full_output:
         residua = []
@@ -26,9 +29,10 @@ def jacobi_method(A, b, iterations=5, startvector=None, w=1, threshold=0.1, full
         # Vorlesung 21.04 S. 4
         residuum = (b - (A @ x_old))
         if full_output:
-            residua.append(max(residuum.content.values()))
+            residua.append(residuum.max())
         x_new = x_old + Diw @ residuum
-        if max(residuum.content.values()) < threshold:
+        if residuum.max() < threshold and threshold > 0:
+            print(residuum.max(), k)
             break
         x_old = x_new
     
