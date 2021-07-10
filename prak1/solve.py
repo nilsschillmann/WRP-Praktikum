@@ -1,48 +1,53 @@
 import numpy as np
 from linsolve import jacobi_method
 
-def solve_problem_jacobi(img, domain):
+def solve_problem_jacobi(img, domain, iterations):
     patch = img.copy()[domain]
     A, b = assemble_system(patch)
-    u_flat = jacobi_method(A, b, 100, patch[1:-1, 1:-1].flatten(), w=1, threshold=0, full_output=False)
-    return u_flat.reshape((patch.shape[0]-2, patch.shape[1]-2))
+    u_flat, residua = jacobi_method(A, b, iterations=iterations, startvector=patch[1:-1, 1:-1].flatten(), w=1, threshold=0, full_output=True)
+    return u_flat.reshape((patch.shape[0]-2, patch.shape[1]-2)), residua
     
 
 def solve_problem(img, domain):
     patch = img.copy()[domain]
-    result = multigrid(patch)
-    return result[1:-1, 1:-1]
+    result, residua = multigrid(patch)
+    return result[1:-1, 1:-1], residua
 
 def multigrid(img):
+    residua = []
     grids = build_grids(img)
     #starte mit gröbstem gitter
-    jacobi_step(grids[0])
+    jacobi_step(grids[0], residua)
     #für jedes gitter
     #   prolonguiere
     #   vzyklus
     for i in range(len(grids)-1):
         new_grid = prolong(grids[i+1].copy(), grids[i])
         grids[i+1][1:-1, 1:-1] = new_grid[1:-1, 1:-1]
-        v_cycle(grids, i)
+        v_cycle(grids, i, residua)
     
-    return grids[-1]
+    return grids[-1], residua
     
-def v_cycle(grids, level):
+def v_cycle(grids, level, residua):
     #go down
+    
     for i in range(level, -1, -1):
         grids[i] = inject(grids[i+1], grids[i].copy())
-        jacobi_step(grids[i])
+        jacobi_step(grids[i], residua)
     
     #go up
     for i in range(level):
         new_grid = prolong(grids[i+1].copy(), grids[i])
         grids[i+1][1:-1, 1:-1] = new_grid[1:-1, 1:-1]
-        jacobi_step(grids[i+1])
+        jacobi_step(grids[i+1], residua)
 
-def jacobi_step(img):
+def jacobi_step(img, residua = None):
     A, b = assemble_system(img)
-    result, residuum = jacobi_method(A, b,iterations=1,threshold=0,full_output=True)
+    result, residuum = jacobi_method(A, b,iterations=20,threshold=0,full_output=True)
     img[1:-1, 1:-1] = result.reshape((img[1:-1, 1:-1].shape))
+    if residua is not None:
+        #print(residuum)
+        residua.append(residuum)
 
 def build_grids(img):
     nLevels = int(np.log2(min(img.shape) - 1) + 0.1)

@@ -29,7 +29,7 @@ def jacobi_method(A, b, iterations=5, startvector=None, w=1, threshold=0.1, full
         # Vorlesung 21.04 S. 4
         residuum = (b - (A @ x_old))
         if full_output:
-            residua.append(residuum.max())
+            residua.append(residuum.mean())
         x_new = x_old + Diw @ residuum
         if residuum.max() < threshold and threshold > 0:
             print(residuum.max(), k)
