@@ -1,6 +1,8 @@
 import numpy as np
 from linsolve import jacobi_method
 
+_ITERATIONS = 20
+
 def solve_problem_jacobi(img, domain, iterations):
     patch = img.copy()[domain]
     A, b = assemble_system(patch)
@@ -8,42 +10,42 @@ def solve_problem_jacobi(img, domain, iterations):
     return u_flat.reshape((patch.shape[0]-2, patch.shape[1]-2)), residua
     
 
-def solve_problem(img, domain):
+def solve_problem(img, domain, iterations=1):
     patch = img.copy()[domain]
-    result, residua = multigrid(patch)
+    result, residua = multigrid(patch, iterations)
     return result[1:-1, 1:-1], residua
 
-def multigrid(img):
+def multigrid(img, iterations):
     residua = []
     grids = build_grids(img)
     #starte mit gröbstem gitter
-    jacobi_step(grids[0], residua)
+    jacobi_step(grids[0], residua, iterations)
     #für jedes gitter
     #   prolonguiere
     #   vzyklus
     for i in range(len(grids)-1):
         new_grid = prolong(grids[i+1].copy(), grids[i])
         grids[i+1][1:-1, 1:-1] = new_grid[1:-1, 1:-1]
-        v_cycle(grids, i, residua)
+        v_cycle(grids, i, residua, iterations=iterations)
     
     return grids[-1], residua
     
-def v_cycle(grids, level, residua):
+def v_cycle(grids, level, residua, iterations=1):
     #go down
     
     for i in range(level, -1, -1):
         grids[i] = inject(grids[i+1], grids[i].copy())
-        jacobi_step(grids[i], residua)
+        jacobi_step(grids[i], residua, iterations)
     
     #go up
     for i in range(level):
         new_grid = prolong(grids[i+1].copy(), grids[i])
         grids[i+1][1:-1, 1:-1] = new_grid[1:-1, 1:-1]
-        jacobi_step(grids[i+1], residua)
+        jacobi_step(grids[i+1], residua, iterations)
 
-def jacobi_step(img, residua = None):
+def jacobi_step(img, residua = None, iterations=1):
     A, b = assemble_system(img)
-    result, residuum = jacobi_method(A, b,iterations=20,threshold=0,full_output=True)
+    result, residuum = jacobi_method(A, b,iterations=iterations,threshold=0,full_output=True)
     img[1:-1, 1:-1] = result.reshape((img[1:-1, 1:-1].shape))
     if residua is not None:
         #print(residuum)
